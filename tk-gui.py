@@ -44,8 +44,10 @@ def plot_data() :
     axs[2].legend(('X','Y','Z'))
     fig2.canvas.draw_idle()
 
-    fig3, axs = plt.subplot(nrows=3,ncols=1,label='Angles')
-    kite.pd_angles.loc[range,'x'].plt
+    fig3, axs = plt.subplots(nrows=3,ncols=1,label='Angles')
+    kite.pd_angles.loc[range,'X'].plot(ax=axs[0],legend=False,title="rotation X")
+    kite.pd_angles.loc[range,'Y'].plot(ax=axs[1],legend=False,title="rotation Y")
+    kite.pd_angles.loc[range,'Z'].plot(ax=axs[2],legend=False,title="rotation Z")
 
     plt.show()
 

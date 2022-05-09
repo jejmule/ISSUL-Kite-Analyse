@@ -215,7 +215,7 @@ class Kite :
 
     def _estimate_attitude(self) :
         #filter signal
-        sos = signal.butter(4, 0.5, 'low',fs=80,output='sos')
+        sos = signal.butter(4, 5, 'low',fs=80,output='sos')
         self.acc_filtered = signal.sosfiltfilt(sos,self.board_acc,axis=0)
         self.gyro_filtered = signal.sosfiltfilt(sos,self.board_gyro,axis=0)+[0.9,0.5,0.5]
         #self.mag_filtered = signal.sosfiltfilt(sos,self.board_mag,axis=0)
