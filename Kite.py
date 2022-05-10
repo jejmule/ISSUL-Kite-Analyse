@@ -118,9 +118,9 @@ class Kite :
         #Get numpy array from panda
         timestamps_us = datas['t']
         forces = datas[['F1','F2','F3','F4','F5','F6']].to_numpy()
-        acc = datas[['Ax','Az','Ay']].to_numpy()*[-1,1,-1]
-        gyro = datas[['Gx','Gz','Gy']].to_numpy()*[-1,-1,-1]
-        mag = datas[['Mx','Mz','My']].to_numpy()*[1,1,-1]
+        acc = datas[['Ax','Az','Ay']].to_numpy()*[1,1,1] #[-1,1,-1]
+        gyro = datas[['Gx','Gz','Gy']].to_numpy()*[1,1,1] #[-1,-1,-1]
+        mag = datas[['Mx','Mz','My']].to_numpy()*[1,1,1] #[1,1,-1]
         #remove outliners with a median filter of size 3 and smooth data
         forces = signal.medfilt(forces,(3,1))
         #get numpy from pandas
@@ -217,7 +217,7 @@ class Kite :
         #filter signal
         sos = signal.butter(4, 5, 'low',fs=80,output='sos')
         self.acc_filtered = signal.sosfiltfilt(sos,self.board_acc,axis=0)
-        self.gyro_filtered = signal.sosfiltfilt(sos,self.board_gyro,axis=0)+[0.9,0.5,0.5]
+        self.gyro_filtered = signal.sosfiltfilt(sos,self.board_gyro,axis=0)+[-0.8303,-0.4435,-0.4783]
         #self.mag_filtered = signal.sosfiltfilt(sos,self.board_mag,axis=0)
         self.mag_filtered = None
 
