@@ -125,7 +125,7 @@ class Kite :
         #remove max value used as NAN on byte informations
         self.raw_datas = self.raw_datas.replace(to_replace={'msec':65535,'year':255,'month':255,'day':255,'hour':255,'min':255,'sec':255,'satellites':255,'fix_quality':255},value=np.nan)
         #self.filled_data = self.raw_datas.asfreq('12500US',method='pad')
-        #self.raw_datas.drop(columns=['msec','year','month','day','hour','min','sec','satellites','fix_quality','lat_NS','lon_EW','mag_EW','empty','mag_var','precision','altitude'],inplace=True)
+        self.raw_datas.drop(columns=['msec','year','month','day','hour','min','sec','satellites','fix_quality','lat_NS','lon_EW','mag_EW','empty','mag_var','precision','altitude'],inplace=True)
         print(self.raw_datas.head())
         print(self.raw_datas.tail())
 
