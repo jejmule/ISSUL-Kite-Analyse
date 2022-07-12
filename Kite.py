@@ -114,19 +114,20 @@ class Kite :
         #concatenate all dataframes into one
         self.raw_datas = pd.concat(dataframes,ignore_index=True)
         #remove offset in time
-        self.raw_datas['t'] -= self.raw_datas['t'].min()
+        self.raw_datas['t'] -= self.raw_datas['t'][0]
         #convert first gps date to epoch
         offset_to_epoch_ns = pd.Timestamp(year=self.raw_datas['year'][0]+2000,month=self.raw_datas['month'][0],day=self.raw_datas['day'][0],hour=self.raw_datas['hour'][0],minute=self.raw_datas['min'][0],second=self.raw_datas['sec'][0],microsecond=self.raw_datas['msec'][0]*1000)#,tz="Europe/Zurich")
         self.offset_to_epoch_us = offset_to_epoch_ns.value / 1000
         #add a timestamp series
-        time_index = pd.to_datetime(self.raw_datas['t']+offset_to_epoch_ns.value/1000,unit='us') + pd.DateOffset(hours=2)
+        time_index = pd.to_datetime(self.raw_datas['t']+offset_to_epoch_ns.value/1000,unit='us') + pd.DateOffset(hours=2,nanoseconds=offset_to_epoch_ns.value)
         self.raw_datas['Timestamp'] = time_index
         self.raw_datas.set_index('Timestamp',inplace=True)
         #remove max value used as NAN on byte informations
         self.raw_datas = self.raw_datas.replace(to_replace={'msec':65535,'year':255,'month':255,'day':255,'hour':255,'min':255,'sec':255,'satellites':255,'fix_quality':255},value=np.nan)
         #self.filled_data = self.raw_datas.asfreq('12500US',method='pad')
-        self.raw_datas.drop(columns=['msec','year','month','day','hour','min','sec','satellites','fix_quality','lat_NS','lon_EW','mag_EW','empty','mag_var','precision','altitude'],inplace=True)
+        #self.raw_datas.drop(columns=['msec','year','month','day','hour','min','sec','satellites','fix_quality','lat_NS','lon_EW','mag_EW','empty','mag_var','precision','altitude'],inplace=True)
         print(self.raw_datas.head())
+        print(self.raw_datas.tail())
 
         #read wind file
         if self.wind_file :
@@ -145,6 +146,7 @@ class Kite :
         self.raw_wind_datas = wind_data
 
         print(wind_data.head())
+        print(wind_data.tail())
 
         #read segment file
         if self.protocol_file :
@@ -228,7 +230,7 @@ class Kite :
         #Resample data at defined frequency
         #new time vector
         resampler_us = np.arange(0,timestamps_us.max(),1e6/sampling_hz)
-        self.datas['date_time'] = pd.DataFrame(pd.to_datetime(resampler_us+self.offset_to_epoch_us,unit='us')+pd.DateOffset(hours=2))
+        self.datas['date_time'] = pd.DataFrame(pd.to_datetime(resampler_us,unit='us')+pd.DateOffset(hours=2,microseconds=self.offset_to_epoch_us))
 
         #resample data
         forces = fF(resampler_us)
@@ -256,13 +258,16 @@ class Kite :
         self.datas[['wind_dir','wind_mean','wind_min','wind_max']] = self.raw_wind_datas[['Angle','Vent_moy','Vent_min','Vent_max']]
 
         print(self.datas.head())
+        print(self.datas.tail())
 
+        print("VMG computation")
+        self._compute_vmg(speed,bearing)
         print("START forces computation")
         self._compute_forces(forces)
         print("START attitude estimation")
         self._estimate_attitude(acc,gyro,mag)
         print("END of processing")
-        self._compute_vmg(speed,bearing)
+        
 
         #forces_array = np.concatenate((self.F_front,self.F_back,self.F_tot),axis=1)
         #len = resampler_us.size

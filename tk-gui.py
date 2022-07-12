@@ -8,6 +8,7 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from matplotlib import widgets
 import matplotlib.dates as mdates
+import matplotlib.ticker as mticker
 from matplotlib.backends.backend_pdf import PdfPages
 #from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -110,24 +111,32 @@ def plot_data() :
     #axs.legend(('XY','YZ','ZX'))
 
     #fig5,axs = plt.subplots(nrows=3,ncols=3,label='histograms')
-    bins_forces = np.arange(0,2025,25)
-    bins_moment = np.arange(-200,210,10)
-    bins_angles = np.arange(-100,105,2)
+    bins_forces = np.arange(0,2010,10)
+    bins_moment = np.arange(-200,202,2)
+    bins_angles = np.arange(-70,71,1)
     ax = kite.datas.loc[range,['Fz_front','Fz_back','Fz']].plot.hist(bins=bins_forces,alpha=0.5,title="Z Forces histogram")
     ax.set_xlabel("[N]")
     ax.set_ylabel("Occurrences ")
+    ax.xaxis.set_minor_locator(mticker.MultipleLocator(10))
+    ax.xaxis.set_major_locator(mticker.MultipleLocator(100))
     plt.get_current_fig_manager().window.state('zoomed')
     ax=kite.datas.loc[range,['Mx_front','Mx_back','Mx']].plot.hist(bins=bins_moment,alpha=0.5,title="X Moment histogram")
     ax.set_xlabel("[Nm]")
     ax.set_ylabel("Occurrences ")
+    ax.xaxis.set_minor_locator(mticker.MultipleLocator(2))
+    ax.xaxis.set_major_locator(mticker.MultipleLocator(20))
     plt.get_current_fig_manager().window.state('zoomed')
     ax=kite.datas.loc[range,['My_front','My_back','My']].plot.hist(bins=bins_moment,alpha=0.5,title="Y Moment histogram")
     ax.set_xlabel("[Nm]")
     ax.set_ylabel("Occurrences ")
+    ax.xaxis.set_minor_locator(mticker.MultipleLocator(2))
+    ax.xaxis.set_major_locator(mticker.MultipleLocator(20))
     plt.get_current_fig_manager().window.state('zoomed')
     ax=kite.datas.loc[range,['Euler_X','Euler_Y']].plot.hist(bins=bins_angles,title='Angles histogram')
     ax.set_xlabel("[°]")
     ax.set_ylabel("Occurrences ")
+    ax.xaxis.set_minor_locator(mticker.MultipleLocator(1))
+    ax.xaxis.set_major_locator(mticker.MultipleLocator(10))
     plt.get_current_fig_manager().window.state('zoomed')
 
 
