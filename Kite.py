@@ -18,6 +18,7 @@ from scipy import interpolate
 from scipy import signal
 from scipy.spatial.transform import Rotation as R
 
+import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 from matplotlib.widgets import RangeSlider, Button
 
@@ -233,6 +234,8 @@ class Kite :
         #new time vector
         resampler_us = np.arange(0,timestamps_us.max(),1e6/sampling_hz)
         self.datas['date_time'] = pd.DataFrame(pd.to_datetime(resampler_us,unit='us')+pd.DateOffset(hours=2,microseconds=self.offset_to_epoch_us))
+        #convert date_time to matplotlib date
+        self.datas['mdate_time'] =  mdates.date2num(self.datas.date_time)
 
         #resample data
         forces = fF(resampler_us)

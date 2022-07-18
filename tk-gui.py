@@ -48,20 +48,16 @@ def plot_data() :
     print(range)
     #time = kite.datas.loc[range,'date_time']
     #index = np.arange(len(time))
-    #convert date_time to matplotlib date
-    import matplotlib.dates as mdates
-    kite.datas.date_time =  mdates.date2num(kite.datas.date_time)
-    print(kite.datas.head())
 
     #PLOT RAW FORCES
-    kite.datas.loc[range,['date_time','F1','F2','F3','F4','F5','F6']].plot(x='date_time',subplots="True",sharex=True,title="Raw Forces")
+    kite.datas.loc[range,['mdate_time','F1','F2','F3','F4','F5','F6']].plot(x='mdate_time',subplots="True",sharex=True,title="Raw Forces")
     plt.get_current_fig_manager().window.state('zoomed')
 
     #PLOT FORCES MOMENT
     fig1, axs = plt.subplots(nrows=3,ncols=1,label='FORCES',sharex=True)
-    kite.datas.loc[range,['date_time','Fz_front','Fz_back','Fz']].plot(x='date_time',ax=axs[0],legend=True,title="Forces Z",ylabel='[N]')
-    kite.datas.loc[range,['date_time','Mx_front','Mx_back','Mx']].plot(x='date_time',ax=axs[1],legend=True,title="Moments X",ylabel='[Nm]')
-    kite.datas.loc[range,['date_time','My_front','My_back','My']].plot(x='date_time',ax=axs[2],legend=True,title="Moments Y",ylabel='[Nm]')
+    kite.datas.loc[range,['mdate_time','Fz_front','Fz_back','Fz']].plot(x='mdate_time',ax=axs[0],legend=True,title="Forces Z",ylabel='[N]')
+    kite.datas.loc[range,['mdate_time','Mx_front','Mx_back','Mx']].plot(x='mdate_time',ax=axs[1],legend=True,title="Moments X",ylabel='[Nm]')
+    kite.datas.loc[range,['mdate_time','My_front','My_back','My']].plot(x='mdate_time',ax=axs[2],legend=True,title="Moments Y",ylabel='[Nm]')
     axs[2].set_xlabel("HH-MM-SS")
     axs[2].xaxis.set_major_locator(mdates.SecondLocator(interval=2))
     axs[2].xaxis.set_major_formatter(mdates.DateFormatter('%H-%M-%S'))
@@ -88,18 +84,18 @@ def plot_data() :
 
     #PLOT RAW IMU datas
     fig3, axs = plt.subplots(nrows=3,ncols=1,label='IMU')
-    kite.datas.loc[range,['date_time','acc_x','acc_y','acc_z']].plot(ax=axs[0],x='date_time',legend=True,title="Accelerations")
-    kite.datas.loc[range,['date_time','gyro_x','gyro_y','gyro_z']].plot(ax=axs[1],x='date_time',legend=True,title="Gyroscopes")
-    kite.datas.loc[range,['date_time','mag_x','mag_y','mag_z']].plot(ax=axs[2],x='date_time',legend=True,title="Magnetic fields")
+    kite.datas.loc[range,['mdate_time','acc_x','acc_y','acc_z']].plot(ax=axs[0],x='mdate_time',legend=True,title="Accelerations")
+    kite.datas.loc[range,['mdate_time','gyro_x','gyro_y','gyro_z']].plot(ax=axs[1],x='mdate_time',legend=True,title="Gyroscopes")
+    kite.datas.loc[range,['mdate_time','mag_x','mag_y','mag_z']].plot(ax=axs[2],x='mdate_time',legend=True,title="Magnetic fields")
     fig3.canvas.draw_idle()
     plt.get_current_fig_manager().window.state('zoomed')
 
     #PLOT ANGLES datas
     fig4, axs = plt.subplots(nrows=3,ncols=1,label='Angles',sharex=True)
-    kite.datas.loc[range,['date_time','Euler_X']].plot(ax=axs[0],x='date_time',legend=True,title="Euler X",ylabel="[°]",)
-    kite.datas.loc[range,['date_time','Euler_Y']].plot(ax=axs[1],x='date_time',legend=True,title="Euler Y",ylabel="[°]")
-    kite.datas.loc[range,['date_time','cap','TWA']].plot(ax=axs[2],x='date_time',legend=True,title="Angle Z",ylabel="[°]")
-    kite.datas.loc[range,['date_time','wind_dir']].plot(ax=axs[2],x='date_time',legend=True,title="Wind moy.",ylabel="[°]")
+    kite.datas.loc[range,['mdate_time','Euler_X']].plot(ax=axs[0],x='mdate_time',legend=True,title="Euler X",ylabel="[°]",)
+    kite.datas.loc[range,['mdate_time','Euler_Y']].plot(ax=axs[1],x='mdate_time',legend=True,title="Euler Y",ylabel="[°]")
+    kite.datas.loc[range,['mdate_time','cap','TWA']].plot(ax=axs[2],x='mdate_time',legend=True,title="Angle Z",ylabel="[°]")
+    kite.datas.loc[range,['mdate_time','wind_dir']].plot(ax=axs[2],x='mdate_time',legend=True,title="Wind moy.",ylabel="[°]")
     axs[2].set_xlabel("HH-MM-SS")
     axs[2].xaxis.set_major_locator(mdates.SecondLocator(interval=2))
     axs[2].xaxis.set_major_formatter(mdates.DateFormatter('%H-%M-%S'))
@@ -171,7 +167,7 @@ def trace_gps():
     speed = kite.datas['speed']
     VMG = kite.datas['VMG']
     wind = kite.datas['wind_mean']
-    time = kite.datas['date_time']
+    time = kite.datas['mdate_time']
     #create figure
     fig, axs = plt.subplots(nrows=1,ncols=2,num=kite.folder.name)
     plt.subplots_adjust(bottom=0.25)
