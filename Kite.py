@@ -78,6 +78,7 @@ class Kite :
             self.files.append(folder/"log_{:04d}.bin".format(i))
         #find wind and protocol file in parent folder
         wind_file = folder.parent/'wind.xlsx'
+        #wind_file = Path('Station2 - 2022-5-10 - 2022-5-13 23_59_59.csv')
         protocol_file = folder.parent/'protocol.txt'
         if wind_file.exists() :
             self.wind_file = wind_file
@@ -132,6 +133,7 @@ class Kite :
         #read wind file
         if self.wind_file :
             wind_data = pd.read_excel(self.wind_file)
+            #wind_data = pd.read_csv(self.wind_file)
             wind_data.set_index('Date',inplace=True)
             wind_data = wind_data.resample(pd.Timedelta(1e6/sampling_hz, "micros")).interpolate('linear')
             start_date = time_index.min()

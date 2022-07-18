@@ -46,8 +46,12 @@ def save_multi_image(folder,filename):
 def plot_data() : 
     range = slice(kite.range[0],kite.range[1]+1)
     print(range)
-    time = kite.datas.loc[range,'date_time']
-    index = np.arange(len(time))
+    #time = kite.datas.loc[range,'date_time']
+    #index = np.arange(len(time))
+    #convert date_time to matplotlib date
+    import matplotlib.dates as mdates
+    kite.datas.date_time =  mdates.date2num(kite.datas.date_time)
+    print(kite.datas.head())
 
     #PLOT RAW FORCES
     kite.datas.loc[range,['date_time','F1','F2','F3','F4','F5','F6']].plot(x='date_time',subplots="True",sharex=True,title="Raw Forces")
