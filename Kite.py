@@ -184,7 +184,7 @@ class Kite :
         else :
             mode = 'w'
         try :
-            with pd.ExcelWriter(self.folder.parent/filename,mode=mode,engine='openpyxl') as writer:  
+            with pd.ExcelWriter(self.folder.parent/filename,mode=mode,engine='auto',datetime_format='dd/mm/yy hh:mm:ss.000') as writer:  
                 self.datas.loc[range].to_excel(writer, sheet_name=self.folder.name,freeze_panes=(1,0))
         except :
             print("Excel writer skipped, sheet already exist")
@@ -239,7 +239,6 @@ class Kite :
         flocation = interploateNan(timestamps_us,location,kind=method,axis=0,fill_value="extrapolate")
         fspeed = interploateNan(timestamps_us,speed,kind=method,axis=0,fill_value="extrapolate")
         fbearing = interploateNan(timestamps_us,bearing,kind=method,axis=0,fill_value="extrapolate")
-        fdate_time = interploateNan(timestamps_us,timestamps_us,kind=method,axis=0,fill_value="extrapolate")
 
         #Resample data at defined frequency
         #new time vector
@@ -247,6 +246,8 @@ class Kite :
         self.datas['date_time'] = pd.DataFrame(pd.to_datetime(resampler_us,unit='us')+pd.DateOffset(hours=2,microseconds=self.offset_to_epoch_us))
         #convert date_time to matplotlib date
         self.datas['mdate_time'] =  mdates.date2num(self.datas.date_time)
+        #add timestamps in ms
+        #self.datas['time_ms'] = np.round(resampler_us/1e3,0)
 
         #resample data
         forces = fF(resampler_us)
