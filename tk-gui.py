@@ -17,7 +17,7 @@ import pandas as pd
 
 #Define Tk root window
 root = Tk()
-root.geometry("400x150+50+50")
+root.geometry("500x150+50+50")
 root.title("ISSUL lab kite analyzer")
 #chart = Toplevel(root)
 
@@ -50,7 +50,7 @@ def plot_data() :
     #index = np.arange(len(time))
 
     #PLOT RAW FORCES
-    kite.datas.loc[range,['mdate_time','F1','F2','F3','F4','F5','F6']].plot(x='mdate_time',subplots="True",sharex=True,title="Raw Forces")
+    kite.datas.loc[range,['mdate_time','F1','F2','F3','F4','F5','F6']].plot(x='mdate_time',subplots=True,sharex=True,title="Raw Forces")
     plt.get_current_fig_manager().window.state('zoomed')
 
     #PLOT FORCES MOMENT
@@ -94,8 +94,11 @@ def plot_data() :
     fig4, axs = plt.subplots(nrows=3,ncols=1,label='Angles',sharex=True)
     kite.datas.loc[range,['mdate_time','Euler_X']].plot(ax=axs[0],x='mdate_time',legend=True,title="Euler X",ylabel="[°]",)
     kite.datas.loc[range,['mdate_time','Euler_Y']].plot(ax=axs[1],x='mdate_time',legend=True,title="Euler Y",ylabel="[°]")
-    kite.datas.loc[range,['mdate_time','cap','TWA']].plot(ax=axs[2],x='mdate_time',legend=True,title="Angle Z",ylabel="[°]")
-    kite.datas.loc[range,['mdate_time','wind_dir']].plot(ax=axs[2],x='mdate_time',legend=True,title="Wind moy.",ylabel="[°]")
+    if kite.wind_file : 
+        kite.datas.loc[range,['mdate_time','cap','TWA']].plot(ax=axs[2],x='mdate_time',legend=True,title="Angle Z",ylabel="[°]")
+        kite.datas.loc[range,['mdate_time','wind_dir']].plot(ax=axs[2],x='mdate_time',legend=True,title="Wind moy.",ylabel="[°]")
+    else :  
+        kite.datas.loc[range,['mdate_time','cap']].plot(ax=axs[2],x='mdate_time',legend=True,title="Angle Z",ylabel="[°]")
     axs[2].set_xlabel("HH-MM-SS")
     axs[2].xaxis.set_major_locator(mdates.SecondLocator(interval=2))
     axs[2].xaxis.set_major_formatter(mdates.DateFormatter('%H-%M-%S'))
@@ -165,8 +168,9 @@ def trace_gps():
     lon = kite.datas['lon']
     lat = kite.datas['lat']
     speed = kite.datas['speed']
-    VMG = kite.datas['VMG']
-    wind = kite.datas['wind_mean']
+    if kite.wind_file : 
+        VMG = kite.datas['VMG']
+        wind = kite.datas['wind_mean']
     time = kite.datas['mdate_time']
     #create figure
     fig, axs = plt.subplots(nrows=1,ncols=2,num=kite.folder.name)
@@ -180,8 +184,9 @@ def trace_gps():
 
     #plot speed
     p1 = axs[1].plot(time,speed)
-    p2 = axs[1].plot(time,VMG)
-    p3 = axs[1].plot(time,wind)
+    if kite.wind_file :
+        p2 = axs[1].plot(time,VMG)
+        p3 = axs[1].plot(time,wind)
     axs[1].set_title('GPS speed')
     axs[1].set_ylabel('speed [knots]')
     axs[1].set_xlabel('HH-MM')
@@ -239,7 +244,7 @@ def trace_gps():
 
 def select_folder() :
     root.folder = filedialog.askdirectory()
-    kite.set_folder(root.folder)
+    kite.set_folder(root.folder,sampling_combo.get())
     kite.read_bin_files_to_pandas()
     segment_combo.config(values=kite.segments_list)
     segment_combo.current(0)
@@ -265,6 +270,9 @@ def save_segmented() :
 
 load_btn = Button(root, text="load data", command=select_folder)
 load_btn.pack(pady = 5,side=LEFT,expand=True)
+sampling_combo = ttk.Combobox(root, values=["5 Hz","10 Hz","50 Hz","80 Hz"])
+sampling_combo.current(0)
+sampling_combo.pack(pady = 5,side=LEFT,expand=True)
 segment_combo = ttk.Combobox(root, values=["load data first"])
 segment_combo.current(0)
 segment_combo.pack(pady = 5,side=LEFT,expand=True)

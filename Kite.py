@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 from matplotlib.widgets import RangeSlider, Button
 
 #sampling rate
-sampling_hz = 80 
+#sampling_hz = 80 
 
 #dimensional parameters in mm
 d= 728
@@ -66,7 +66,7 @@ class Kite :
     datas = pd.DataFrame()
     
     #set experiement folder
-    def set_folder(self,path) :
+    def set_folder(self,path,sampling_hz=80) :
         folder = Path(path)
         count = 0
         #find bin files
@@ -79,19 +79,27 @@ class Kite :
             self.files.append(folder/"log_{:04d}.bin".format(i))
         #find wind and protocol file in parent folder
         wind_file = folder.parent/'wind.xlsx'
+        self.wind_data = False
         #wind_file = Path('Station2 - 2022-5-10 - 2022-5-13 23_59_59.csv')
         protocol_file = folder.parent/'protocol.txt'
         if wind_file.exists() :
             self.wind_file = wind_file
             print("Wind file : "+str(wind_file))
         else :
-            print("Wind file NOT FOUND ")
+            print("No Wind file in parent directory")
         if protocol_file.exists() :
             self.protocol_file = protocol_file
             print("Protocol file : "+str(protocol_file))
         else :
             print("Protocol file NOT FOUND ")
         self.folder = folder
+
+        #check if sampling rate is a string
+        if isinstance(sampling_hz,str) :
+            #get number before space
+            sampling_hz = int(sampling_hz.split(' ')[0])
+            print("Sampling rate : ",sampling_hz)
+        self.sampling_hz = sampling_hz
 
     def read_bin_files_to_pandas(self) : 
         #data_struct = struct.Struct('I6f9f4B?fcfc2f3Bfc2B2f12b')
@@ -182,7 +190,7 @@ class Kite :
             print("Excel writer skipped, sheet already exist")
         
 
-    def analyze(self) :
+    def analyze(self,) :
         #re-init datas dataframe
         self.datas = pd.DataFrame()
         #Get numpy array from panda
@@ -219,6 +227,8 @@ class Kite :
         speed = raw_datas['speed'].to_numpy()
         bearing = raw_datas['angle'].to_numpy()
 
+        #get time 
+
         #interpolate data
         print("- interpolate datas")
         method = "linear"
@@ -229,10 +239,11 @@ class Kite :
         flocation = interploateNan(timestamps_us,location,kind=method,axis=0,fill_value="extrapolate")
         fspeed = interploateNan(timestamps_us,speed,kind=method,axis=0,fill_value="extrapolate")
         fbearing = interploateNan(timestamps_us,bearing,kind=method,axis=0,fill_value="extrapolate")
+        fdate_time = interploateNan(timestamps_us,timestamps_us,kind=method,axis=0,fill_value="extrapolate")
 
         #Resample data at defined frequency
         #new time vector
-        resampler_us = np.arange(0,timestamps_us.max(),1e6/sampling_hz)
+        resampler_us = np.arange(0,timestamps_us.max(),1e6/self.sampling_hz)
         self.datas['date_time'] = pd.DataFrame(pd.to_datetime(resampler_us,unit='us')+pd.DateOffset(hours=2,microseconds=self.offset_to_epoch_us))
         #convert date_time to matplotlib date
         self.datas['mdate_time'] =  mdates.date2num(self.datas.date_time)
@@ -260,13 +271,15 @@ class Kite :
         self.datas['cap'] = bearing
 
         #add Wind to DataFrame
-        self.datas[['wind_dir','wind_mean','wind_min','wind_max']] = self.raw_wind_datas[['Angle','Vent_moy','Vent_min','Vent_max']]
+        if self.wind_file :
+            self.datas[['wind_dir','wind_mean','wind_min','wind_max']] = self.raw_wind_datas[['Angle','Vent_moy','Vent_min','Vent_max']]
 
         print(self.datas.head())
         print(self.datas.tail())
 
-        print("VMG computation")
-        self._compute_vmg(speed,bearing)
+        if self.wind_file :
+            print("VMG computation")
+            self._compute_vmg(speed,bearing)    
         print("START forces computation")
         self._compute_forces(forces)
         print("START attitude estimation")
@@ -357,8 +370,8 @@ class Kite :
         q0 = R.from_rotvec([0,0,0],degrees=True)
         q_zero = np.roll(q0.as_quat(),1)
         q_zero /= np.linalg.norm(q_zero)
-        IMU = Madgwick(acc=acc_filtered*9.81,gyr=gyro_filtered*np.pi/180, frequency = sampling_hz,q0=q_zero)#,mag=self.mag_filtered*1e3)
-        MARG = Madgwick(acc=acc_filtered*9.81,gyr=gyro_filtered*np.pi/180, frequency = sampling_hz,q0=q_zero,mag=mag_filtered*1e3)
+        IMU = Madgwick(acc=acc_filtered*9.81,gyr=gyro_filtered*np.pi/180, frequency = self.sampling_hz,q0=q_zero)#,mag=self.mag_filtered*1e3)
+        MARG = Madgwick(acc=acc_filtered*9.81,gyr=gyro_filtered*np.pi/180, frequency = self.sampling_hz,q0=q_zero,mag=mag_filtered*1e3)
 
         #convert quaternion to Euler angle, roll array to fit quaternion convention of scipy and ahrs
         r_imu = R.from_quat(np.roll(IMU.Q,-1))
@@ -371,17 +384,13 @@ class Kite :
         #r_mag.as_rotvec(degrees=True)
 
     def _compute_vmg(self,speed,bearing):
-        #todo VMG
-        self.datas['VMG'] = np.zeros_like(speed)
-        return
         bearing = np.radians(bearing)
         wind_dir = np.radians(self.raw_wind_datas['Angle'].to_numpy()+np.pi) #np.pi is added to get the angle between the two vector at the same orgin
         cap = np.array([np.cos(bearing), np.sin(bearing)])
         wind = np.array([np.cos(wind_dir), np.sin(wind_dir)])
         dot = []
-        #todo VMG
-        #for i in range(len(bearing)) : 
-        #    dot.append(np.dot(cap[:,i],wind[:,i]))
+        for i in range(len(bearing)) : 
+            dot.append(np.dot(cap[:,i],wind[:,i]))
         TWA = np.arccos(dot)
         self.datas['TWA'] = np.degrees(TWA)
         VMG = speed*np.cos(TWA)
