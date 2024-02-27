@@ -371,13 +371,17 @@ class Kite :
         #r_mag.as_rotvec(degrees=True)
 
     def _compute_vmg(self,speed,bearing):
+        #todo VMG
+        self.datas['VMG'] = np.zeros_like(speed)
+        return
         bearing = np.radians(bearing)
         wind_dir = np.radians(self.raw_wind_datas['Angle'].to_numpy()+np.pi) #np.pi is added to get the angle between the two vector at the same orgin
         cap = np.array([np.cos(bearing), np.sin(bearing)])
         wind = np.array([np.cos(wind_dir), np.sin(wind_dir)])
         dot = []
-        for i in range(len(bearing)) : 
-            dot.append(np.dot(cap[:,i],wind[:,i]))
+        #todo VMG
+        #for i in range(len(bearing)) : 
+        #    dot.append(np.dot(cap[:,i],wind[:,i]))
         TWA = np.arccos(dot)
         self.datas['TWA'] = np.degrees(TWA)
         VMG = speed*np.cos(TWA)
