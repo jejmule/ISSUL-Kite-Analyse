@@ -270,7 +270,7 @@ def save_segmented() :
 
 load_btn = Button(root, text="load data", command=select_folder)
 load_btn.pack(pady = 5,side=LEFT,expand=True)
-sampling_combo = ttk.Combobox(root, values=["5 Hz","10 Hz","50 Hz","80 Hz"])
+sampling_combo = ttk.Combobox(root, values=["10 Hz","20 Hz","50Hz","80 Hz"])
 sampling_combo.current(0)
 sampling_combo.pack(pady = 5,side=LEFT,expand=True)
 segment_combo = ttk.Combobox(root, values=["load data first"])
